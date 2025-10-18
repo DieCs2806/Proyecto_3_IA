@@ -1,0 +1,6 @@
+,,,
+,ID_variable,Variable,Depende
+,x,reunion,"e1,e2,y"
+,e1,lluvia,
+,e2,mantenimiento,
+,y,estadoTren,e2
