@@ -13,5 +13,12 @@ class Grafo:
         self.nodo = nodo
         self.conexiones = conexiones
     
-    def añadirNodo(nodo):
-        if 
+    def añadirNodo(self, nodo):
+        if not isinstance(nodo, Nodo):
+            raise TypeError("El objeto debe ser de tipo Nodo")
+        
+        if nodo.nombre in self.nodo:
+            raise TypeError("El nodo ya existe")
+        self.nodo = nodo
+    
+    
