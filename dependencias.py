@@ -17,6 +17,6 @@ class Grafo:
         
         if nodo.nombre in self.nodo:
             raise ValueError("El nodo ya existe")
-        self.nodos[nodo.nombre] = nodo
+        self.nodo[nodo.nombre] = nodo
     
     
