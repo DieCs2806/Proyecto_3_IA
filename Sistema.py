@@ -60,10 +60,19 @@ def leer_dependencias(path_csv: str):
     arcos = list(df[['Padre', 'Hijo']].itertuples(index=False, name=None))
     return arcos
     
+def inferenciaEnumeracion(bn: agr.BayesNet, evidencia: Dict[str, str], consulta: str) -> Dict[str, float]:
+    ie = agr.LazyPropagation(bn)
+    ie.setEvidence(evidencia)
+    resultado = ie.posterior(consulta)
+    distribucion = {}
+    for i in range(resultado.size()):
+        etiqueta = bn.variable(consulta).label(i)
+        probabilidad = resultado[i]
+        distribucion[etiqueta] = probabilidad
+    return distribucion
+
 def main():
-
-    grafo = Grafo() 
-
+    grafo = Grafo()
     nodo_train = leerArchivo("Train.csv")
     nodo_rain = leerArchivo("Rain.csv")
     nodo_appt = leerArchivo("Appoinment.csv")
@@ -81,54 +90,35 @@ def main():
     print("\n--- ¡Nodos Cargados en tu Grafo Exitosamente! ---")
 
     print(f"Probabilidades: {dict(list(nodo_train.probabilidades.items())[0:])}")
-
-    # ... (Pasos 1 y 2 de carga de nodos en tu Grafo, sin cambios) ...
-
-# --------------------------------------------------------
-# PASO CRÍTICO DE CORRECCIÓN: CONSTRUIR LA RED EN pyAgrum
-# --------------------------------------------------------
     
     bn = agr.BayesNet("RedBayesiana")
 
-    # 3. AÑADIR LAS VARIABLES (NODOS) A LA RED DE pyAgrum (bn)
-    
     for nombre, nodo in grafo.nodos.items():
         # Crear la variable LabelizedVariable de pyAgrum
         variable = agr.LabelizedVariable(nombre, nombre)
-        
-        # Añadir las opciones/estados
         for opcion in nodo.opciones:
             variable.addLabel(opcion)
-        
-        # **Asegúrate que la llamada sea EXCLUSIVAMENTE a bn.addVariable(variable)**
-        # Si usas pyAgrum (agr), el método es addVariable()
         try:
-             # Aquí es donde ocurre el error si la llamada no es correcta:
              bn.add(variable) 
              print(f"✅ Variable '{nombre}' (pyAgrum) añadida con opciones: {nodo.opciones}")
         except TypeError as e:
              # Esto captura el error y te da más información si persiste
              print(f"🚨 ERROR: Falló al añadir la variable '{nombre}' a pyAgrum. Detalle: {e}")
              return # Detener si hay un error
-             
-
-    # 4. AÑADIR LOS ARCOS (CONEXIONES) A LA RED DE pyAgrum (bn)
-    # ... (Esta sección debería estar bien si el Paso 3 se ejecuta) ...
     arcos = leer_dependencias('Dependencias.csv')
-    print(f"\n--- Añadiendo Arcos a pyAgrum ---")
-    
+    print(f"\n--- Añadiendo Arcos a pyAgrum ---")    
     for padre, hijo in arcos:
-        # Esto ya funciona porque los nodos se agregaron en el paso 3
         try:
              bn.addArc(padre, hijo)
              print(f"🔗 Arco añadido: {padre} -> {hijo}")
         except Exception as e:
              print(f"Error al añadir arco {padre} -> {hijo}: {e}")
-             
-    # 5. ASIGNAR LAS PROBABILIDADES (CPTs)
-    # ... (Esta sección para CPTs debería estar bien si los nodos existen) ...
-    # (El código de asignación de CPTs no causaría el error TypeError de la imagen)
-    # ...
+    evidencia = {"Rain": "Light", "Maintenance": "No"}
+    consulta = "Train"
+    VA = inferenciaEnumeracion(bn, evidencia, consulta)
+    print(f"\n--- Resultados de la Inferencia para '{consulta}' dado {evidencia} ---")
+    for valor, prob in VA.items():
+        print(f"P({consulta}={valor} | evidencia) = {prob:.4f}")
 
 
 if __name__ == "__main__":
