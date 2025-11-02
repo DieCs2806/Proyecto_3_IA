@@ -1,0 +1,10 @@
+Padre,Hijo
+Trabajo,Sueño
+Entrenamiento,Sueño
+Trabajo,Entrenamiento
+Trabajo,Suplementos
+Trabajo,Comida
+Comida,Gains
+Sueño,Gains
+Entrenamiento,Gains
+Suplementos,Gains
